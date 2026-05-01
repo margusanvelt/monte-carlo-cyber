@@ -1,0 +1,27 @@
+{
+    "name": "Example Data Breach",
+    "description": "Loss from a single data breach event",
+    "frequency": {
+        "type": "pert",
+        "params": {
+            "min": 0.1,
+            "most_likely": 0.5,
+            "max": 2.0,
+            "mean": null,
+            "std_dev": null,
+            "value": null
+        }
+    },
+    "magnitude": {
+        "type": "pert",
+        "params": {
+            "min": 50000.0,
+            "most_likely": 500000.0,
+            "max": 5000000.0,
+            "mean": null,
+            "std_dev": null,
+            "value": null
+        }
+    },
+    "iterations": 10000
+}
