@@ -5,14 +5,14 @@ description: Model and simulate cyber risks using Monte Carlo methods. Use when 
 
 # Quantitative Risk Assessment
 
-This skill enables Gemini CLI to perform quantitative risk assessments using Monte Carlo simulations. It helps users move away from qualitative "Red/Amber/Green" scales to data-driven financial loss models.
+This skill enables AI assistants (such as Google Antigravity, Claude Code, and Claude.ai) to perform quantitative risk assessments using Monte Carlo simulations. It helps users move away from qualitative "Red/Amber/Green" scales to data-driven financial loss models.
 
 ## Workflow
 
 1.  **Define Scenario**: Identify the risk (e.g., Data Breach, System Outage).
 2.  **Estimate Frequency**: Determine how often the event occurs per year using a distribution (Constant, PERT, Poisson).
 3.  **Estimate Magnitude**: Determine the financial loss if the event occurs using a distribution (Constant, PERT, Lognormal).
-4.  **Run Simulation**: Use the `simulate.py` script to run 10,000+ iterations.
+4.  **Run Simulation**: Use the bundled `simulate.py` script to run 10,000+ iterations.
 5.  **Interpret Results**: Analyze Mean Loss and P95 (Value at Risk).
 
 ## Distribution Types
@@ -31,10 +31,13 @@ Assistant: I will model this using a PERT distribution for both frequency (0.1, 
 
 ### Running a Simulation
 
-Use the bundled script:
+Execute the bundled simulation script, passing the JSON configuration as a command-line argument:
 ```bash
-python3 skills/quantitative-risk-assessment/scripts/simulate.py '<JSON_CONFIG>'
+.venv/bin/python scripts/simulate.py '<JSON_CONFIG>'
 ```
+*(Or with an activated virtual environment: `python3 scripts/simulate.py '<JSON_CONFIG>'`. You can also specify the path within your installed skill directory, e.g., `.venv/bin/python .agents/skills/quantitative-risk-assessment/scripts/simulate.py '<JSON_CONFIG>'` or `.venv/bin/python .claude/skills/quantitative-risk-assessment/scripts/simulate.py '<JSON_CONFIG>'`).*
+
+> **Virtual Environment**: The simulation engine requires `numpy` and `scipy`. Always execute the script using the project virtual environment (e.g., `.venv/bin/python`) or while `.venv` is activated.
 
 JSON Config Schema:
 ```json

@@ -1,5 +1,12 @@
 import sys
 import json
+from pathlib import Path
+
+# Ensure local 'core' package inside scripts directory is on sys.path
+scripts_dir = Path(__file__).resolve().parent
+if str(scripts_dir) not in sys.path:
+    sys.path.insert(0, str(scripts_dir))
+
 import numpy as np
 from core.models import RiskScenario
 from core.simulation import run_simulation

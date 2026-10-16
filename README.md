@@ -11,10 +11,11 @@ A comprehensive toolset for performing quantitative (cyber) risk assessments usi
 4. [Example Case Study: Data Breach](#example-case-study-data-breach)
 5. [Installation & Setup](#installation--setup)
 6. [Usage Guide](#usage-guide)
+    - [Web Interface (Interactive Dashboard)](#web-interface-interactive-dashboard)
     - [Command Line Interface (CLI)](#command-line-interface-cli)
-    - [Web Interface](#web-interface)
-    - [Gemini CLI Skill](#gemini-cli-skill)
-7. [Project Structure](#project-structure)
+    - [Agent Skills (Google Antigravity & Claude)](#agent-skills-google-antigravity--claude)
+7. [Interpreting Simulation Results](#interpreting-simulation-results)
+8. [Project Structure](#project-structure)
 
 ---
 
@@ -103,27 +104,107 @@ The engine performs the sampling to account for the overlapping uncertainties of
 ## Installation & Setup
 
 ### 1. Prerequisites
--   Python 3.10+
--   [Gemini CLI](https://github.com/google/gemini-cli) (optional, for Skill usage)
+- **Python 3.10+**
+- `git`
 
-### 2. Setup Environment
+> [!IMPORTANT]
+> **Always use a Python virtual environment (`.venv`).**
+> Never install dependencies into your system/global Python environment. All installations, web server launches, CLI runs, and simulations must strictly use an active virtual environment or target `.venv/bin/python` / `.venv/bin/pip` (or `.venv\Scripts\` on Windows). This prevents dependency conflicts and ensures reproducibility.
+
+### 2. Local Environment Setup
+
+Follow these steps to create an isolated environment and install the required dependencies:
+
+#### macOS & Linux
 ```bash
+# 1. Clone the repository and navigate to the project directory
+git clone <repository-url>
+cd monte-carlo-cyber
+
+# 2. Create the virtual environment
 python3 -m venv .venv
+
+# 3. Activate the virtual environment
 source .venv/bin/activate
+
+# 4. Install dependencies inside the virtual environment
 pip install -r requirements.txt
 ```
+
+#### Windows (PowerShell or Command Prompt)
+```powershell
+# 1. Create the virtual environment
+python -m venv .venv
+
+# 2. Activate the virtual environment
+# In PowerShell:
+.venv\Scripts\Activate.ps1
+# In Command Prompt (cmd.exe):
+.venv\Scripts\activate.bat
+
+# 3. Install dependencies inside the virtual environment
+pip install -r requirements.txt
+```
+
+> [!TIP]
+> Confirm that your virtual environment is active before running commands (`(.venv)` will appear at the start of your shell prompt). If you open a new terminal window, remember to reactivate it (`source .venv/bin/activate`).
 
 ---
 
 ## Usage Guide
 
-### Command Line Interface (CLI)
+### Web Interface (Interactive Dashboard)
+
+The web interface is the easiest way to model cyber risks, adjust distribution parameters in real time, and visualize loss exceedance distributions.
+
+#### 1. Start the Web Server
+Make sure your virtual environment is activated, then run:
+
 ```bash
-# Generate a sample scenario file
+python3 -m uvicorn src.api.main:app --reload --port 8000
+```
+
+*(Alternatively, you can start the server directly using Python: `python3 -m src.api.main`)*
+
+#### 2. Open the Dashboard
+Open your web browser and navigate to:
+```
+http://localhost:8000
+```
+*(or `http://127.0.0.1:8000`)*
+
+#### 3. Run a Simulation
+1. **Scenario Definition**: Enter a name (e.g., *"Customer Database Breach"* or *"Cloud Ransomware"*) and select the iteration count (default: `10,000`).
+2. **Frequency (Annual Event Likelihood)**: Input the PERT distribution bounds for expected events per year:
+   - **Minimum**: e.g., `0.05` (once every 20 years)
+   - **Most Likely**: e.g., `0.2` (once every 5 years)
+   - **Maximum**: e.g., `0.5` (once every 2 years)
+3. **Magnitude (Impact per Event)**: Input the estimated financial loss ($) per incident:
+   - **Minimum ($)**: e.g., `50000`
+   - **Most Likely ($)**: e.g., `250000`
+   - **Maximum ($)**: e.g., `1500000`
+4. Click **Run Monte Carlo Simulation**.
+5. View the statistical outputs (**Mean Annual Loss**, **P95 Value at Risk**, **Median Loss**) and the interactive histogram of simulated outcomes.
+6. When finished, stop the web server by pressing `Ctrl + C` in your terminal.
+
+---
+
+### Command Line Interface (CLI)
+
+The CLI tool supports headless runs, automation scripts, and interactive wizards:
+
+```bash
+# Generate a sample scenario JSON file
 python3 -m src.cli.main template my_risk.json
 
-# Run the simulation and see results
+# Run a simulation from a JSON file and view formatted table results
 python3 -m src.cli.main run my_risk.json
+
+# Save simulation outputs to a JSON file
+python3 -m src.cli.main run my_risk.json --output results.json
+
+# Interactive CLI wizard that walks you through parameter definition
+python3 -m src.cli.main wizard
 ```
 
 #### JSON Input Schema
@@ -142,19 +223,63 @@ python3 -m src.cli.main run my_risk.json
 }
 ```
 
-### Web Interface
-Launch the interactive dashboard:
-```bash
-PYTHONPATH=. uvicorn src.api.main:app --port 8000
-```
-Then visit [http://localhost:8000](http://localhost:8000) in your browser.
+---
 
-### Gemini CLI Skill
-Install the skill in your workspace:
+### Agent Skills (Google Antigravity & Claude)
+
+This repository includes a skill conforming to the open [Agent Skills specification](https://agentskills.io) (`skills/quantitative-risk-assessment/SKILL.md`). This enables AI coding agents and LLMs to autonomously model cyber risks, invoke Monte Carlo simulations, and interpret financial loss metrics from plain-language user requests.
+
+#### 1. Installing in Google Antigravity (IDE & CLI)
+
+Antigravity natively indexes and activates skills using progressive disclosure:
+
+- **Workspace / Project Scope (Recommended)**:
+  Copy the skill folder into the `.agents/skills` directory in your workspace:
+  ```bash
+  mkdir -p .agents/skills
+  cp -r skills/quantitative-risk-assessment .agents/skills/
+  ```
+  *(Antigravity automatically discovers skills inside `.agents/skills/` whenever this project is opened in the Antigravity IDE or CLI `agy`.)*
+
+- **Global Scope (Available across all projects)**:
+  Copy the skill folder into your user's global Antigravity config directory:
+  ```bash
+  mkdir -p ~/.gemini/config/skills
+  cp -r skills/quantitative-risk-assessment ~/.gemini/config/skills/
+  ```
+
+#### 2. Installing in Claude (Claude Code & Claude.ai / Cowork)
+
+- **Claude Code (Terminal CLI)**:
+  - **Project Scope**:
+    ```bash
+    mkdir -p .claude/skills
+    cp -r skills/quantitative-risk-assessment .claude/skills/
+    ```
+  - **Global Scope**:
+    ```bash
+    mkdir -p ~/.claude/skills
+    cp -r skills/quantitative-risk-assessment ~/.claude/skills/
+    ```
+
+- **Claude.ai / Cowork / Claude Desktop (Web & App)**:
+  1. Open Claude.ai or Claude Desktop.
+  2. Navigate to your user settings or sidebar and click **Customize** (or the **Skills** tab).
+  3. Click **+ Create skill** (or **Upload a skill**).
+  4. Upload the packaged archive [`quantitative-risk-assessment.zip`](./quantitative-risk-assessment.zip) located in the root of this repository.
+  *(Note: Ensure code execution/analysis is enabled in Claude's settings).*
+
+#### 3. Legacy Gemini CLI (Optional)
+If using the legacy Gemini CLI:
 ```bash
 gemini skills install quantitative-risk-assessment.skill --scope workspace
 ```
-Once installed, use natural language: *"Model a ransomware risk with frequency 0.1-0.5 and magnitude $1M-$10M."*
+
+#### Natural Language Usage Examples
+Once installed in either Antigravity or Claude, simply prompt the AI assistant:
+- *"Model a ransomware risk with frequency between 0.1 and 0.5 events/year and financial loss between $1M and $10M (most likely $3M)."*
+- *"Simulate our exposure to a cloud provider outage with 10,000 iterations and show the P95 Value at Risk."*
+- *"If a $250k security control cuts our breach frequency in half, calculate the expected annual financial ROI."*
 
 ---
 
@@ -182,8 +307,11 @@ After running the simulation, you will receive several metrics. Here is how to u
 
 ## Project Structure
 
--   `src/core/`: Mathematical models and simulation logic.
--   `src/cli/`: Typer-based command line interface.
--   `src/api/`: FastAPI backend and HTML/JS frontend.
--   `skills/`: Gemini CLI skill definition.
--   `tests/`: Unit tests for the engine.
+- `src/core/`: Mathematical models, probability distributions (PERT, Lognormal, Poisson), and simulation logic.
+- `src/cli/`: Typer-based command line interface and interactive wizard.
+- `src/api/`: FastAPI backend with embedded web dashboard and Chart.js visualization.
+- `skills/`: Agent skill definition conforming to the open Agent Skills standard.
+- `quantitative-risk-assessment.zip`: Ready-to-upload skill package for Claude.ai / Cowork.
+- `quantitative-risk-assessment.skill`: Packaged skill archive for Gemini CLI.
+- `tests/`: Unit tests for the engine.
+

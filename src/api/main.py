@@ -50,3 +50,8 @@ async def read_index():
         with open(index_path, "r") as f:
             return f.read()
     return "<h1>Quantitative Risk Assessment App</h1><p>Static index.html not found.</p>"
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("src.api.main:app", host="127.0.0.1", port=8000, reload=True)
+
